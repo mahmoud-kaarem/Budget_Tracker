@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/LoginStyling.css';
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    email: '',
+    password: ''
   });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -14,12 +19,66 @@ function LoginPage() {
       ...prev,
       [name]: value
     }));
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+     } //else if (formData.password.length < 8) {
+    //   newErrors.password = 'Password must be at least 8 characters';
+    // }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your authentication logic here
-    console.log('Login submitted:', formData);
+    
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      // Replace with your actual authentication API call
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token and redirect
+        localStorage.setItem('authToken', data.token);
+        navigate('/dashboard');
+      } else {
+        setErrors({ apiError: data.message || 'Login failed' });
+      }
+    } catch (error) {
+      setErrors({ apiError: 'Network error. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -28,27 +87,34 @@ function LoginPage() {
         <div className="login-header">
           <div className="logo">
             <span className="money-icon">💰</span>
-            <h1>BudgetTrack</h1>
+            <h1>Budget Track</h1>
           </div>
           <h2>Welcome Back</h2>
           <p>Log in to manage your finances</p>
         </div>
 
+        {errors.apiError && (
+          <div className="error-message">
+            {errors.apiError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="username" className="input-label">
-              <FaUser className="input-icon" />
-              Username
+            <label htmlFor="email" className="input-label">
+              <FaEnvelope className="input-icon" />
+              Email
             </label>
             <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
-              required
-              className="form-input"
+              className={`form-input ${errors.email ? 'input-error' : ''}`}
+              placeholder="your@email.com"
             />
+            {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
 
           <div className="form-group">
@@ -63,8 +129,8 @@ function LoginPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                required
-                className="form-input"
+                className={`form-input ${errors.password ? 'input-error' : ''}`}
+                placeholder="Enter your password"
               />
               <button
                 type="button"
@@ -75,10 +141,16 @@ function LoginPage() {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
+            {errors.password && <span className="error-text">{errors.password}</span>}
           </div>
 
-          <button type="submit" className="login-button">
-            Login <FaArrowRight className="button-icon" />
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Logging in...' : 'Login'}
+            {!isLoading && <FaArrowRight className="button-icon" />}
           </button>
         </form>
 
