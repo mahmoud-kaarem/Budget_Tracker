@@ -1,0 +1,16 @@
+.insight-card {
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.1);
+    backdrop-filter: blur(6px);
+    text-align: center;
+  }
+  
+  .chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 0;
+  }
+  
