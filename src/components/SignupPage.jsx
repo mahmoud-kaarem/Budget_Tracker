@@ -34,67 +34,86 @@ function SignupPage() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const nameRegex = /^[a-zA-Z]+$/;
-
-    if (!formData.firstName) {
-      newErrors.firstName = 'First name is required';
-    } else if (!nameRegex.test(formData.firstName)) {
-      newErrors.firstName = 'Only letters allowed';
-    }
-
-    if (!formData.lastName) {
-      newErrors.lastName = 'Last name is required';
-    } else if (!nameRegex.test(formData.lastName)) {
-      newErrors.lastName = 'Only letters allowed';
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    // if (!formData.password) {
-    //   newErrors.password = 'Password is required';
-    // } else if (formData.password.length < 8) {
-    //   newErrors.password = 'Password must be at least 8 characters';
-    // }
-
-    if (!formData.occupation) {
-      newErrors.occupation = 'Please select your occupation';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return emailRegex.test(email);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    console.log('handleSubmit called with:', formData);
+    setErrors({});
 
-    setIsLoading(true);
+    // Basic validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.occupation) {
+      console.log('Missing fields:', formData);
+      setErrors({ apiError: 'All fields are required' });
+      return;
+    }
+
+    if (!validateEmail(formData.email)) {
+      console.log('Invalid email:', formData.email);
+      setErrors({ email: 'Please enter a valid email' });
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      console.log('Invalid password length:', formData.password);
+      setErrors({ password: 'Password must be at least 8 characters' });
+      return;
+    }
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      setIsLoading(true);
+      const jobType = formData.occupation === 'full-time' ? 'FullTime' :
+                      formData.occupation === 'part-time' ? 'PartTime' :
+                      formData.occupation;
+
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        jobType: jobType
+      };
+
+      const headers = { 'Content-Type': 'application/json' };
+      console.log('Sending fetch request with payload:', payload);
+
+      const response = await fetch('http://localhost:8080/api/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
+        headers,
+        body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        let errorMessage = `Signup failed: ${response.status} ${response.statusText}`;
 
-      if (response.ok) {
-        navigate('/Login', { state: { signupSuccess: true } });
-      } else {
-        setErrors({ apiError: data.message || 'Signup failed' });
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          errorMessage = errorData.errors
+            ? Object.values(errorData.errors).flat().join('; ')
+            : errorData.message || errorMessage;
+        } else {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+        }
+
+        throw new Error(errorMessage);
       }
-    } catch (error) {
-      setErrors({ apiError: 'Network error. Please try again.' });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        await response.json();
+      }
+
+      console.log('Signup successful, redirecting to login');
+      alert('Signup successful!');
+      navigate('/', { replace: true });
+    } catch (err) {
+      console.error('Signup error:', err);
+      setErrors({ apiError: err.message || 'Signup failed. Please check your network or server configuration.' });
     } finally {
       setIsLoading(false);
     }

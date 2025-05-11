@@ -19,7 +19,6 @@ function LoginPage() {
       ...prev,
       [name]: value
     }));
-    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -37,9 +36,7 @@ function LoginPage() {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-     } //else if (formData.password.length < 8) {
-    //   newErrors.password = 'Password must be at least 8 characters';
-    // }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -53,8 +50,7 @@ function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Replace with your actual authentication API call
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,12 +61,20 @@ function LoginPage() {
         })
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type');
+      let data;
+
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = { message: await response.text() || 'Unknown server error' };
+      }
 
       if (response.ok) {
-        // Store token and redirect
+        // Store userId and token in localStorage
+        localStorage.setItem('userId', data.userId);
         localStorage.setItem('authToken', data.token);
-        navigate('/dashboard');
+        navigate('/main');
       } else {
         setErrors({ apiError: data.message || 'Login failed' });
       }

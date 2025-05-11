@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/userCard.css'; 
+import '../styles/UserCard.css';
 import user_logo from '../assets/profile-user.png';
 import 'bootstrap-icons/font/bootstrap-icons.css'; 
 
 function UserCard() {
   const navigate = useNavigate();
+  const userId = localStorage.getItem('userId') || 'Not logged in';
 
   const handleInsightsClick = () => {
     navigate('/insights'); 
@@ -14,9 +15,9 @@ function UserCard() {
   return (
     <div className="user_card">
       <img src={user_logo} className="user_logo" alt="User Logo" />
-      <h3>username</h3>
-      <h3>email@test.com</h3>
-      <h3>job-type</h3>
+      <div className="user-id-container">
+        <p className="user-id">User ID: {userId}</p>
+      </div>
 
       <div className="insights-button-container">
         <button className="insights-button" onClick={handleInsightsClick}>

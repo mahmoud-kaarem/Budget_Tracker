@@ -1,11 +1,14 @@
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import TopBar from "../components/TopBar";
-import UserCard from "../components/UserCard";
+import UserCard from "../components/userCard";
 import IncomeCard from "../components/IncomeCard";
 import ExpenseCard from "../components/ExpenseCard";
+import { useNavigate } from 'react-router-dom';
 import '../styles/mainPage.css';
 
 function MainPage() {
+  const navigate = useNavigate();
+
   return (
     <>
       <TopBar />
@@ -21,6 +24,11 @@ function MainPage() {
               </Col>
               <Col md={12} className="mt-4">
                 <ExpenseCard />
+              </Col>
+              <Col md={12} className="mt-4 text-center">
+                <Button variant="primary" onClick={() => navigate('/history')}>
+                  History
+                </Button>
               </Col>
             </Row>
           </Col>

@@ -58,3 +58,14 @@
   background-color: #003f7f;
   transform: translateY(-1px);
 }
+
+.user-id-container {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.user-id {
+  font-size: 16px;
+  color: #333;
+  margin: 0;
+}
