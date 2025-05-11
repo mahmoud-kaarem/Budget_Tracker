@@ -57,11 +57,11 @@ function SignupPage() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      console.log('Invalid password length:', formData.password);
-      setErrors({ password: 'Password must be at least 8 characters' });
-      return;
-    }
+    // if (formData.password.length < 8) {
+    //   console.log('Invalid password length:', formData.password);
+    //   setErrors({ password: 'Password must be at least 8 characters' });
+    //   return;
+    // }
 
     try {
       setIsLoading(true);
@@ -254,7 +254,7 @@ function SignupPage() {
         </form>
 
         <div className="auth-footer">
-          <p>Already have an account? <Link to="/login" className="auth-link">Log in</Link></p>
+          <p>Already have an account? <Link to="/" className="auth-link">Log in</Link></p>
         </div>
       </div>
     </div>

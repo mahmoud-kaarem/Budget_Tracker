@@ -8,7 +8,7 @@ function TopBar() {
   const handleLogout = () => {
     localStorage.removeItem('userId');
     localStorage.removeItem('authToken');
-    navigate('/login');
+    navigate('/');
   };
 
   return (
